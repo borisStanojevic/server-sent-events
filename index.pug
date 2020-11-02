@@ -1,0 +1,39 @@
+doctype html
+
+head
+  meta(charset='UTF-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title Document
+
+div Cryptocurrencies:
+
+ul
+  for cryptocurrency in cryptocurrencies
+    li
+      span=cryptocurrency.name
+      span="-"
+      span(id=cryptocurrency.name + "Value")=cryptocurrency.value
+
+script.
+  const eventSource = new EventSource("/event-stream");
+
+  eventSource.onopen = (event) => {
+    console.log("Connection established.");
+  };
+
+  eventSource.onerror = (event) => {
+    if (event.readyState === EventSource.CLOSED) {
+        console.log("Connection closed.");
+    }
+    if(event.readyState === EventSource.CONNECTING){
+        console.log("Attempting to reconnect...");
+    }
+  };
+
+  eventSource.addEventListener("cryptocurrencyChanged", (event) => {
+      const cryptocurrency = JSON.parse(event.data);
+
+      const valueDomElement  = document.getElementById(`${cryptocurrency.name}Value`);
+
+      valueDomElement.innerText = cryptocurrency.value;
+  });
